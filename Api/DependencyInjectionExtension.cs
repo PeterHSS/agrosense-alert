@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace Api;
 
@@ -72,6 +73,13 @@ public static class DependencyInjectionExtension
         using var context = scope.ServiceProvider.GetRequiredService<AlertDbContext>();
 
         context.Database.Migrate();
+    }
+
+    public static IHostBuilder AddSerilog(this IHostBuilder hostBuilder)
+    {
+        hostBuilder.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
+        return hostBuilder;
     }
 
     private static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)

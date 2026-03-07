@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 env:
-  DOCKERHUB_REPOSITORY: klurgs/agrosense-gateway
+  DOCKERHUB_REPOSITORY: klurgs/agrosense-alert
 
 jobs:
   build-and-deploy:
@@ -42,4 +42,4 @@ jobs:
           tags: |
               ${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }}
               ${{ env.DOCKERHUB_REPOSITORY }}:latest
-          file: Api/Dockerfile
+          file: src/Api/Dockerfile

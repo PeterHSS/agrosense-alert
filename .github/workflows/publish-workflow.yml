@@ -1,0 +1,45 @@
+name: Publish Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+env:
+  DOCKERHUB_REPOSITORY: klurgs/agrosense-gateway
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build
+        run: dotnet build AgroSense.Alert.slnx --configuration Release
+
+      - name: Test
+        run: dotnet test AgroSense.Alert.slnx --configuration Release --no-build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: |
+              ${{ env.DOCKERHUB_REPOSITORY }}:${{ github.sha }}
+              ${{ env.DOCKERHUB_REPOSITORY }}:latest
+          file: Api/Dockerfile

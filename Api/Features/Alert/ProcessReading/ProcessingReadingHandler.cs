@@ -1,4 +1,5 @@
-﻿using Api.Domain.Entities;
+﻿using System.Diagnostics.Metrics;
+using Api.Domain.Entities;
 using Api.Domain.Events;
 using Api.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +8,25 @@ namespace Api.Features.Alert.ProcessReading;
 
 public class ProcessReadingHandler(AlertDbContext context, ILogger<ProcessReadingHandler> logger)
 {
+    private static readonly Meter _meter = new("AgroSense.Alert");
+
+    private static double _lastSoilMoisture;
+    private static double _lastTemperature;
+    private static double _lastPrecipitation;
+
+
+    private static readonly ObservableGauge<double> _soilMoistureGauge = _meter.CreateObservableGauge("agrosense_soil_moisture_percent", () => _lastSoilMoisture);
+    private static readonly ObservableGauge<double> _temperatureGauge = _meter.CreateObservableGauge("agrosense_temperature_celsius", () => _lastTemperature);
+    private static readonly ObservableGauge<double> _precipitationGauge = _meter.CreateObservableGauge("agrosense_precipitation_mm", () => _lastPrecipitation);
+    private static readonly Counter<long> _alertsOpened = _meter.CreateCounter<long>("agrosense_alerts_opened_total");
+    private static readonly Counter<long> _alertsResolved = _meter.CreateCounter<long>("agrosense_alerts_resolved_total");
+
     public async Task HandleAsync(SensorDataIngestedEvent @event, CancellationToken cancellationToken)
     {
+        _lastSoilMoisture = @event.SoilMoisture;
+        _lastTemperature = @event.Temperature;
+        _lastPrecipitation = @event.Precipitation;
+
         context.SensorReadings.Add(new SensorReadingRecord
         {
             PlotId = @event.PlotId,
@@ -44,7 +62,10 @@ public class ProcessReadingHandler(AlertDbContext context, ILogger<ProcessReadin
                     PlotId = @event.PlotId,
                     Type = rule.Type,
                     Message = rule.Message
+
                 });
+
+                _alertsOpened.Add(1, new KeyValuePair<string, object?>("alert_type", rule.Type.ToString()), new KeyValuePair<string, object?>("plot_id", @event.PlotId.ToString()));
 
                 logger.LogWarning("[ALERTA ABERTO] {Type} | Talhão: {TalhaoId}", rule.Type, @event.PlotId);
             }
@@ -53,6 +74,8 @@ public class ProcessReadingHandler(AlertDbContext context, ILogger<ProcessReadin
                 existing.Status = AlertStatus.Resolved;
 
                 existing.ResolvedAt = DateTime.UtcNow;
+
+                _alertsResolved.Add(1, new KeyValuePair<string, object?>("alert_type", rule.Type.ToString()), new KeyValuePair<string, object?>("plot_id", @event.PlotId.ToString()));
 
                 logger.LogInformation("[ALERTA RESOLVIDO] {Type} | Talhão: {TalhaoId}", rule.Type, @event.PlotId);
             }

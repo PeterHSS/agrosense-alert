@@ -31,6 +31,7 @@ builder.Services
             .AddRuntimeInstrumentation()
             .AddProcessInstrumentation()
             .AddNpgsqlInstrumentation()
+            .AddMeter("AgroSense.Alert")
             .AddPrometheusExporter())
     .WithTracing(tracing =>
         tracing

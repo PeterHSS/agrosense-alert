@@ -124,7 +124,7 @@ public static class DependencyInjectionExtension
 
     private static IServiceCollection AddContexts(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default") ?? throw new InvalidOperationException("ConnectionString not configured.");
+        var connectionString = configuration.GetConnectionString("Alert") ?? throw new InvalidOperationException("ConnectionString not configured.");
 
         services.AddDbContext<AlertDbContext>(options => options.UseNpgsql(connectionString));
 

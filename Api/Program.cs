@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDependecyInjection(builder.Configuration);
 
+Serilog.Debugging.SelfLog.Enable(Console.Error);
+
 builder.Host.AddSerilog();
 
 builder.Logging.AddOpenTelemetry(logging =>

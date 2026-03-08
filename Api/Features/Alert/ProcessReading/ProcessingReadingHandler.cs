@@ -28,8 +28,13 @@ public class ProcessReadingHandler(AlertDbContext context, ILogger<ProcessReadin
 
         var results = AlertRules.Evaluate(@event, last24h);
 
+        logger.LogInformation("[PROCESSANDO LEITURA] Talhão: {PlotId} | Umidade: {SoilMoisture} | Temp: {Temperature} | Chuva: {Precipitation}",
+            @event.PlotId, @event.SoilMoisture, @event.Temperature, @event.Precipitation);
+
         foreach (var rule in results)
         {
+            logger.LogInformation("[REGRA AVALIADA] {Type} | Triggered: {Triggered}", rule.Type, rule.Triggered);
+
             var existing = await context.Alerts.FirstOrDefaultAsync(alert => alert.PlotId == @event.PlotId && alert.Type == rule.Type && alert.Status == AlertStatus.Active, cancellationToken);
 
             if (rule.Triggered && existing is null)

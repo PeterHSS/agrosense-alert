@@ -1,5 +1,4 @@
 ﻿using Api.Common;
-using Api.Features.Alert.Get;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

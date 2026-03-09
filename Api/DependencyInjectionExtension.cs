@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Api.Common;
 using Api.Common.Middlewares;
-using Api.Features.Alert.Get;
+using Api.Features.Alert.GetActive;
 using Api.Features.Alert.ProcessReading;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence.Contexts;

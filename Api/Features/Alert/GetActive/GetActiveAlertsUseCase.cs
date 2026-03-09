@@ -3,7 +3,7 @@ using Api.Domain.Entities;
 using Api.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api.Features.Alert.Get;
+namespace Api.Features.Alert.GetActive;
 
 public class GetActiveAlertsUseCase(AlertDbContext context) 
 {
